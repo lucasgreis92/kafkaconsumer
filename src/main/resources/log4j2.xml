@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="60">
+    <Properties>
+        <Property name="logstash.host">udp:192.168.15.5</Property>
+        <Property name="logstash.port">12201</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console-Appender" target="SYSTEM_OUT">
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+                </pattern>
+            </PatternLayout>
+        </Console>
+        <Gelf name="Gelf" host="${logstash.host}" port="${logstash.port}" version="1.1"
+              extractStackTrace="true" filterStackTrace="false" originHost="%host{fqdn}">
+            <Field name="timestamp" pattern="%d{dd MMM yyyy HH:mm:ss,SSS}"/>
+            <Field name="level" pattern="%level"/>
+            <Field name="simpleClassName" pattern="%C{1}"/>
+            <Field name="className" pattern="%C"/>
+            <Field name="server" pattern="%host"/>
+            <Field name="application" pattern="Kafka_Consumer"/>
+            <Field name="tag" pattern="log"/>
+        </Gelf>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.springframework.web" level="info" additivity="false">
+            <AppenderRef ref="SpringBoot-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="com.example.logging" level="info" additivity="false">
+            <AppenderRef ref="App-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+            <AppenderRef ref="Gelf"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="Console-Appender"/>
+            <AppenderRef ref="Gelf"/>
+        </Root>
+    </Loggers>
+</Configuration>
+<!--
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID:- } [%t] -&#45;&#45; %-40.40logger{39} : %m%n"/>
+        </layout>
+    </appender>
+    <appender name="graylog2" class="org.graylog2.log.GelfAppender">
+        <param name="graylogHost" value="192.168.15.5"/>
+        <param name="originHost" value="192.168.15.3"/>
+        <param name="graylogPort" value="9000"/>
+        <param name="extractStacktrace" value="true"/>
+        <param name="addExtendedInformation" value="true"/>
+        <param name="facility" value="gelf-java"/>
+        <param name="Threshold" value="INFO"/>
+        <param name="additionalFields" value="{'environment': 'DEV', 'application': 'discovery'}"/>
+    </appender>
+    <root>
+        <priority value="INFO"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="graylog2"/>
+    </root>
+</log4j:configuration>
+-->
